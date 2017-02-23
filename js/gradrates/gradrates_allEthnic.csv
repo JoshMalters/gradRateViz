@@ -1,0 +1,10 @@
+in_fig,ethnicity,graduation_rate
+FALSE,asian,82.5708061
+FALSE,black,72.09302326
+FALSE,other,80.1242236
+FALSE,white,77.10970464
+TRUE,asian,84.53125
+TRUE,black,75
+TRUE,hispanic,66.66666667
+TRUE,other,80.59701493
+TRUE,white,83.15412186
