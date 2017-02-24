@@ -197,6 +197,7 @@ $(function() {
             var nested = d3.nest()
                 .key(function (d) { return d.in_fig; })
                 .entries(data);
+            curData = nested;
 
             // Change the domain of our scales based on the values we get
             xScale.domain(d3.extent(data, function (d) { return d.tran_yr;}));
