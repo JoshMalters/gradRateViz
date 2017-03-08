@@ -7,6 +7,7 @@ $(function() {
         innerWidth =  width - margin.left - margin.right;
 
     var parseTime = d3.timeParse("%Y");
+    var formatValue = d3.format(".4s");
 
     // Add SVG and the group where the viz is going to be contained
     var svg = d3.select("#viz").append("svg")
@@ -20,11 +21,14 @@ $(function() {
     var xScale = d3.scaleTime().range([0, innerWidth]);
     var yScale = d3.scaleLinear().range([innerHeight, 0]);
     var colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+    var hoverLineXScale = d3.scaleLinear()
+        .range([0, $("#distributionViz").width() - 75])
+        .domain([0, innerWidth]);
 
     // These are the groups for the axis SVGs
     var xAxisG = g.append("g")
         .attr("class", "x axis")
-        .attr("transform", "translate(0," + innerHeight + ")")
+        .attr("transform", "translate(0," + innerHeight + ")");
     var yAxisG = g.append("g")
         .attr("class", "y axis");
 
@@ -67,6 +71,7 @@ $(function() {
         return d;
     }
 
+    var curData;
     function render(data) {
         // Change the domain of our scales based on the values we get
         xScale.domain(d3.extent(data, function (d){ return d.tran_yr; }));
@@ -122,15 +127,6 @@ $(function() {
         return val ? "Took FIG" : "Did Not Take FIG";
     }
 
-    function getYPostion(d) {
-        var values = d.values;
-        var lastVal = values[values.length - 1].graduation_rate;
-        var secondToLastVal =  values[values.length - 2].graduation_rate;
-        var initialYPosition = yScale(lastVal);
-        var offSet = secondToLastVal > lastVal ? 10 : -10;
-        return initialYPosition + offSet;
-    }
-
     // *************************** All Hover Over Code ***************************
     var bisectDate = d3.bisector(function(d) { return d.tran_yr; }).left;
 
@@ -143,6 +139,18 @@ $(function() {
         .attr('id', 'hover-line')
         .attr('x1', 0).attr('x2', 0)
         .attr('y1', 0).attr('y2', innerHeight)
+        .style('stroke-opacity', 0);
+
+    // Hover line for distribution chart
+    var distHoverLineGroup = d3.select('#distGroup').append('g')
+        .attr('class', 'hover-line');
+
+
+    //** Add the line to the group
+    var distHoverLine = distHoverLineGroup.append('line')
+        .attr('id', 'dist-hover-line')
+        .attr('x1', 0).attr('x2', 0)
+        .attr('y1', 0).attr('y2', $('#distributionViz').height() - 65)
         .style('stroke-opacity', 0);
 
     // Create a invisible rect for mouse tracking
@@ -160,6 +168,7 @@ $(function() {
     // Mouse out handler, makes tooltip and line invisible
     function mouseOut() {
         // Hide Hover line
+        distHoverLine.style('stroke-opacity', 0);
         hoverLine.style('stroke-opacity', 0);
         toolTip.style('visibility', 'hidden');
     }
@@ -168,6 +177,7 @@ $(function() {
     function mouseMove() {
         var mouse   = d3.mouse(this),
             mouseX  = mouse[0],
+            distMouseX = hoverLineXScale(mouse[0]),
             mouseY  = mouse[1],
             timeStamp   = xScale.invert(mouseX);
 
@@ -180,14 +190,19 @@ $(function() {
             .attr('x2', mouseX)
             .style('stroke-opacity', 1);
 
+        distHoverLine
+            .attr('x1', distMouseX)
+            .attr('x2', distMouseX)
+            .style('stroke-opacity', 1);
+
         //** Display tool tip
         toolTip
             .style('visibility', 'visible')
             .style("left", (mouseX + 60 + "px"))
             .style("top", (mouseY + "px"))
             .html(String(timeStamp).split(" ")[3] + "<br/>"
-                + "FIG: " + figVal + "<br/>"
-                + "Non-FIG: " + nonFigVal);
+                + "FIG: " + formatValue(figVal) + "%<br/>"
+                + "Non-FIG: " + formatValue(nonFigVal) + "%");
     }
 
     function getGraduationRateForYear(data, timeStamp) {
@@ -200,14 +215,12 @@ $(function() {
     }
 
     // *************************** Applying Tags ***************************
-    $("form").on("submit", function(event) {
-        event.preventDefault(); // Prevent default action of refreshing page.
-
+    $(".filterInput").on("change", function() {
         // Grab Values from form
-        var gender = $(this).find('[id=genderInput]').val();
-        upperCaseGender = gender.charAt(0).toUpperCase() + gender.slice(1);
-        var ethnicity = $(this).find('[id=ethnicityInput]').val();
-        upperCaseEthnicity = ethnicity.charAt(0).toUpperCase() + ethnicity.slice(1);
+        var gender = $('#genderInput').val();
+        var upperCaseGender = gender.charAt(0).toUpperCase() + gender.slice(1);
+        var ethnicity = $('#ethnicityInput').val();
+        var upperCaseEthnicity = ethnicity.charAt(0).toUpperCase() + ethnicity.slice(1);
 
         // Set text in tag box
         $('#genderVal').text(upperCaseGender);
@@ -219,7 +232,6 @@ $(function() {
 
         var file = 'js/gradrates/gradrates' + gender + ethnicity + ".csv";
         updateData(file);
-        $('#myModal').fadeOut(100);
     });
 
     function updateData(file) {
