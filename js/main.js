@@ -1,12 +1,13 @@
 $(function() {
     // *************************** Viz Set Up ***************************
-    var margin = {top: 20, right: 50, bottom: 30, left: 30},
+    var margin = {top: 20, right: 50, bottom: 50, left: 60},
         width = $("#viz").width(),
         height = 500,
         innerHeight = height - margin.top - margin.bottom,
         innerWidth =  width - margin.left - margin.right;
 
     var parseTime = d3.timeParse("%Y");
+    var formatValue = d3.format(".4s");
 
     // Add SVG and the group where the viz is going to be contained
     var svg = d3.select("#viz").append("svg")
@@ -20,19 +21,39 @@ $(function() {
     var xScale = d3.scaleTime().range([0, innerWidth]);
     var yScale = d3.scaleLinear().range([innerHeight, 0]);
     var colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+    var hoverLineXScale = d3.scaleLinear()
+        .range([0, $("#distributionViz").width() - 75])
+        .domain([0, innerWidth]);
 
     // These are the groups for the axis SVGs
     var xAxisG = g.append("g")
         .attr("class", "x axis")
-        .attr("transform", "translate(0," + innerHeight + ")")
+        .attr("transform", "translate(0," + innerHeight + ")");
     var yAxisG = g.append("g")
         .attr("class", "y axis");
 
     // Setup axes, don't append them yet. Need to set domain below first.
     var xAxis = d3.axisBottom()
         .scale(xScale);
+    // text label for the x axis
+    svg.append("text")
+        .attr("transform",
+            "translate(" + (width/2) + " ," +
+            (innerHeight + margin.bottom + 20) + ")")
+        .style("text-anchor", "middle")
+        .text("Date");
+
     var yAxis = d3.axisLeft()
         .scale(yScale);
+    // text label for the y axis
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", (margin.left / 5))
+        .attr("x",0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Graduation Rate (%)");
+
 
     // Function for line object
     var line = d3.line()
@@ -50,10 +71,11 @@ $(function() {
         return d;
     }
 
+    var curData;
     function render(data) {
         // Change the domain of our scales based on the values we get
         xScale.domain(d3.extent(data, function (d){ return d.tran_yr; }));
-        yScale.domain(d3.extent (data, function (d){ return d.graduation_rate; }));
+        yScale.domain([30, 100]);
 
         // draw them axes
         xAxisG.call(xAxis);
@@ -68,27 +90,27 @@ $(function() {
         curData = nested;
         colorScale.domain(nested.map(function (d) { return d.key; }));
 
-        // Define two path groups, figs and non figs
-        // Loop through each symbol / key
-        var legendSpace = innerWidth/nested.length;
 
-        nested.forEach(function(d,i) {                           // ******
+        nested.forEach(function(d,i) {
             g.append("path")
                 .attr("class", "line")
-                .style("stroke", function() { // Add the colours dynamically
+                .style("stroke", function() { // Add the colors dynamically
                     return d.colorScale = colorScale(d.key); })
                 .attr("id", d.key) // assign ID
                 .attr("d",  line(d.values));
 
-            // Add the Legend
-            g.append("text")                                    // *******
-                .attr("x", (legendSpace/2)+i*legendSpace) // spacing // ****
-                .attr("y", innerHeight + (margin.bottom/2) - 25)         // *******
-                .attr("class", "legend")    // style the legend   // *******
-                .style("fill", function() { // dynamic colours    // *******
-                    return d.colorScale = colorScale(d.key); })             // *******
-                .text(d.key);                                     // *******
-
+            var yPosition = (innerHeight - 30) - (i * 20);
+           // Add the Legend
+            g.append("text")
+                .attr("transform", "translate("+(xScale(parseTime('2006')))+","+yPosition+")")
+                .attr("dy", ".35em")
+                .attr("text-anchor", "end")
+                .attr("id", "legend" + d.key)
+                .style("fill", function() { // dynamic colours
+                    return d.colorScale = colorScale(d.key); })
+                .transition()
+                .delay(2000)
+                .text(figLabel(d.key));
         });
 
         var path = g.selectAll(".line");
@@ -98,6 +120,11 @@ $(function() {
             .duration(2000)
             .ease(d3.easePolyInOut)
             .attr("stroke-dashoffset", 0);
+    }
+
+    function figLabel(val) {
+        val = val.toLocaleLowerCase() == 'true';
+        return val ? "Took FIG" : "Did Not Take FIG";
     }
 
     // *************************** All Hover Over Code ***************************
@@ -112,6 +139,18 @@ $(function() {
         .attr('id', 'hover-line')
         .attr('x1', 0).attr('x2', 0)
         .attr('y1', 0).attr('y2', innerHeight)
+        .style('stroke-opacity', 0);
+
+    // Hover line for distribution chart
+    var distHoverLineGroup = d3.select('#distGroup').append('g')
+        .attr('class', 'hover-line');
+
+
+    //** Add the line to the group
+    var distHoverLine = distHoverLineGroup.append('line')
+        .attr('id', 'dist-hover-line')
+        .attr('x1', 0).attr('x2', 0)
+        .attr('y1', 0).attr('y2', $('#distributionViz').height() - 65)
         .style('stroke-opacity', 0);
 
     // Create a invisible rect for mouse tracking
@@ -129,6 +168,7 @@ $(function() {
     // Mouse out handler, makes tooltip and line invisible
     function mouseOut() {
         // Hide Hover line
+        distHoverLine.style('stroke-opacity', 0);
         hoverLine.style('stroke-opacity', 0);
         toolTip.style('visibility', 'hidden');
     }
@@ -137,6 +177,7 @@ $(function() {
     function mouseMove() {
         var mouse   = d3.mouse(this),
             mouseX  = mouse[0],
+            distMouseX = hoverLineXScale(mouse[0]),
             mouseY  = mouse[1],
             timeStamp   = xScale.invert(mouseX);
 
@@ -149,14 +190,19 @@ $(function() {
             .attr('x2', mouseX)
             .style('stroke-opacity', 1);
 
+        distHoverLine
+            .attr('x1', distMouseX)
+            .attr('x2', distMouseX)
+            .style('stroke-opacity', 1);
+
         //** Display tool tip
         toolTip
             .style('visibility', 'visible')
             .style("left", (mouseX + 60 + "px"))
             .style("top", (mouseY + "px"))
             .html(String(timeStamp).split(" ")[3] + "<br/>"
-                + "FIG: " + figVal + "<br/>"
-                + "Non-FIG: " + nonFigVal);
+                + "FIG: " + formatValue(figVal) + "%<br/>"
+                + "Non-FIG: " + formatValue(nonFigVal) + "%");
     }
 
     function getGraduationRateForYear(data, timeStamp) {
@@ -169,14 +215,12 @@ $(function() {
     }
 
     // *************************** Applying Tags ***************************
-    $("form").on("submit", function(event) {
-        event.preventDefault(); // Prevent default action of refreshing page.
-
+    $(".filterInput").on("change", function() {
         // Grab Values from form
-        var gender = $(this).find('[id=genderInput]').val();
-        upperCaseGender = gender.charAt(0).toUpperCase() + gender.slice(1);
-        var ethnicity = $(this).find('[id=ethnicityInput]').val();
-        upperCaseEthnicity = ethnicity.charAt(0).toUpperCase() + ethnicity.slice(1);
+        var gender = $('#genderInput').val();
+        var upperCaseGender = gender.charAt(0).toUpperCase() + gender.slice(1);
+        var ethnicity = $('#ethnicityInput').val();
+        var upperCaseEthnicity = ethnicity.charAt(0).toUpperCase() + ethnicity.slice(1);
 
         // Set text in tag box
         $('#genderVal').text(upperCaseGender);
@@ -188,7 +232,6 @@ $(function() {
 
         var file = 'js/gradrates/gradrates' + gender + ethnicity + ".csv";
         updateData(file);
-        $('#myModal').fadeOut(100);
     });
 
     function updateData(file) {
@@ -199,23 +242,8 @@ $(function() {
                 .entries(data);
             curData = nested;
 
-            // Change the domain of our scales based on the values we get
-            xScale.domain(d3.extent(data, function (d) { return d.tran_yr;}));
-            yScale.domain(d3.extent(data, function (d) { return d.graduation_rate; }));
-
-            g.select(".x.axis")// change the x axis
-                .transition()
-                .duration(750)
-                .call(xAxis);
-
-            g.select(".y.axis")// change the y axis
-                .transition()
-                .duration(750)
-                .call(yAxis);
-
             // Change the two paths.
             nested.forEach(function(d,i) {
-                console.log(d.values);
                 g.select("#" + d.key)
                     .transition()
                     .ease(d3.easePolyInOut)

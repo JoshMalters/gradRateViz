@@ -37,7 +37,7 @@ function render(data) {
             var translateX = (outerRadius * 2) + ((outerRadius + innerRadius * 2) * i);
             var translateY = (outerRadius * 2) + ((outerRadius + innerRadius * 2) * e * 1.3)
 
-            var svg = d3.select("svg"),
+            var svg = d3.select("#ratios"),
                 width = +svg.attr("width"),
                 height = +svg.attr("height"),
                 g = svg.append("g").attr("transform", "translate(" + translateX + "," + translateY + ")");

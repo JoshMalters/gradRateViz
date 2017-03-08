@@ -16,11 +16,12 @@
 
 <body>
 <div class="header">
-    <h2 class="title" style="text-align: center">A visualization of FIG vs non-FIG graduation rates.</h2>
+    <h2 class="title" style="text-align: center">A Visualization of FIG vs non-FIG Student Graduation Rates</h2>
 </div>
 
 <div id="body" class="container">
-    <div class="row">
+    <h4 class="subheader" style="text-align: center">Graduation Rates and Student Distribution Per Year</h4>
+    <div class="row" style="margin-bottom: 5em;">
         <!-- V I Z U A L I Z A T I O N -->
         <div id="viz" class="two-thirds column">
         </div>
@@ -28,56 +29,44 @@
         <!-- P A N E L -->
         <div class="one-third column">
             <div id="panel">
-                <div>
-                    <p><strong>Tags: </strong></p>
-                    <p>Gender: <span id="genderVal">All</span></p>
-                    <p>Ethnicity: <span id="ethnicityVal">All</span> </p>
-                </div>
-                <div style="text-align: center;">
-                    <button id="addTag" class="button-primary">Edit Tags</button>
-                </div>
+                <form id="form">
+                    <label for="genderInput">Gender:</label>
+                    <select class="filterInput u-full-width" id="genderInput">
+                        <option value="all">All</option>
+                        <option value="female">Female</option>
+                        <option value="male">Male</option>
+                    </select>
+                    <label for="ethnicityInput">Ethnicity:</label>
+                    <select class="filterInput u-full-width" id="ethnicityInput">
+                        <option value="all">All</option>
+                        <option value="asian">Asian</option>
+                        <option value="black">Black</option>
+                        <option value="white">White</option>
+                        <option value="hispanic">Hispanic</option>
+                    </select>
+                </form>
             </div>
-            <div style="text-align: center; padding-top: 1em;">
-                <a class="button" href="gradMap.html">Switch to Ratio Maps</a>
+
+            <div id="distributionViz">
             </div>
         </div>
     </div>
-</div>
 
-<!-- P O P   D O W N   M O D A L -->
-<div id="myModal" class="modal">
-    <!-- Modal content -->
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <p>Tags:</p>
-        <form id="form">
-            <label for="genderInput">Gender:</label>
-            <select class="u-full-width" id="genderInput">
-                <option value="all">All</option>
-                <option value="female">Female</option>
-                <option value="male">Male</option>
-            </select>
-            <label for="ethnicityInput">Ethnicity:</label>
-            <select class="u-full-width" id="ethnicityInput">
-                <option value="all">All</option>
-                <option value="asian">Asian</option>
-                <option value="black">Black</option>
-                <option value="white">White</option>
-                <option value="hispanic">Hispanic</option>
-            </select>
-            <div style="text-align: center;">
-                <button id="submitBtn" class="button-primary">Apply</button>
-            </div>
-        </form>
+    <!-- S E C O N D     V I Z U A L I Z A T I O N -->
+    <div class="row">
+        <h4 class="subheader" style="text-align: center">Graduation Rates By Demographic</h4>
+        <svg id="ratios" width="960" height="500"></svg>
     </div>
-
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/jquery-ui.min.js" type="text/javascript"></script>
 <script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://cdn.jsdelivr.net/lodash/4.17.4/lodash.min.js"  type="text/javascript"></script>
+<script src="js/distribution.js" type="text/javascript"></script>
 <script src="js/main.js" type="text/javascript"></script>
-<script src="js/modal.js" type="text/javascript"></script>
+<script src="js/ratios.js" type="text/javascript"></script>
+
 </body>
 
 </html>
