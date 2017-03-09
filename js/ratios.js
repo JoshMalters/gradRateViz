@@ -25,10 +25,43 @@ $(function() {
     var allData;
     var scrollFromTop = $("#ratios").offset().top + 100;
     var loaded = true;
+
     $(document).scroll(function () {
         if ($(this).scrollTop() + $(window).height()  > scrollFromTop && loaded) {
             loaded = !loaded;
             d3.csv("js/gradrates/gradrates_allEthnicNumbers.csv", type, render);
+
+            // **** Legend ****
+            var trueLegend = svg.append('g')
+                .attr("id", "trueLegend")
+                .attr('transform', "translate(" + (width) + "," + (height/2) + ")");
+            trueLegend.append('text')
+                .style("text-anchor", "end")
+                .style('fill', colorScale('trueF'))
+                .style('font-size', '1.2em')
+                .text("Female Students");
+            trueLegend.append('text')
+                .attr("dy", "1em")
+                .style("text-anchor", "end")
+                .style('fill', colorScale('trueM'))
+                .style('font-size', '1.2em')
+                .text("Male Students");
+
+            var falseLegend = svg.append('g')
+                .attr("id", "trueLegend")
+                .attr('transform', "translate(" + (width) + "," + (height - 20) + ")");
+            falseLegend.append('text')
+                .style("text-anchor", "end")
+                .style('fill', colorScale('falseF'))
+                .style('font-size', '1.2em')
+                .text("Female Students");
+            falseLegend.append('text')
+                .attr("dy", "1em")
+                .style("text-anchor", "end")
+                .style('fill', colorScale('falseM'))
+                .style('font-size', '1.2em')
+                .text("Male Students");
+            // **** End Legend ****
 
             // Function to appropriately type cast the data
             function type(d) {
@@ -60,7 +93,7 @@ $(function() {
                     })
                     .entries(data);
 
-                nested = nested.reverse()
+                nested = nested.reverse();
 
                 nested.forEach(function (d, e) {
                     var title = d3.select("#ratios").append("g")
@@ -114,29 +147,21 @@ $(function() {
                                 .duration(750)
                                 .attrTween("d", arcTween(gradRate * tau));
 
-                            var length = values.ethnicity.length;
-                            var textLength = length + (length / 2);
-                            var percentOfG = ((width - textLength) / (width));
-                            var dx = Math.ceil(textLength + Math.ceil((1 / (percentOfG * 100)) * width));
-
+                            var text = values.ethnicity.charAt(0).toUpperCase() + values.ethnicity.slice(1);
                             g.append("text")
                                 .attr("id", "" + d.key + j.key + k.key + "ethnicText")
-                                .attr("dx", -dx)
                                 .attr("dy", "-1em")
                                 .attr("class", "arcLabel")
-                                .text(values.ethnicity);
-
-                            g.append("text")
-                                .attr("dx", -dx)
-                                .attr("class", "arcLabel")
-                                .text(d.key.toLowerCase() == 'true' ? "FIG" : "No FIG");
+                                .style("text-anchor", "middle")
+                                .text(text);
 
                             g.append("text")
                                 .attr("id", "" + d.key + j.key + k.key + l + "gradRateText")
-                                .attr("dx", -dx)
-                                .attr("dy", 1 + l + "em")
+                                .attr("dy", .5 + l + "em")
                                 .attr("class", "arcLabel")
-                                .text(Math.round(values.graduation_rate) + "%");
+                                .style("text-anchor", "middle")
+                                .style("fill", colorScale("" + d.key + k.key))
+                                .text("" + k.key + ": " + (Math.round(values.graduation_rate)) + "%");
                         });
                     })
                 });
@@ -194,6 +219,39 @@ $(function() {
                 .style('stroke', '#eee')
                 .style("stroke-opacity", 1);
 
+            // **** Legend ****
+            var trueLegend = svg.append('g')
+                .attr("id", "trueLegend")
+                .attr('transform', "translate(" + (width) + "," + (height/2) + ")");
+            trueLegend.append('text')
+                .style("text-anchor", "end")
+                .style('fill', colorScale('trueF'))
+                .style('font-size', '1.2em')
+                .text("Female Students");
+            trueLegend.append('text')
+                .attr("dy", "1em")
+                .style("text-anchor", "end")
+                .style('fill', colorScale('trueM'))
+                .style('font-size', '1.2em')
+                .text("Male Students");
+
+            var falseLegend = svg.append('g')
+                .attr("id", "trueLegend")
+                .attr('transform', "translate(" + (width) + "," + (height - 20) + ")");
+            falseLegend.append('text')
+                .style("text-anchor", "end")
+                .style('fill', colorScale('falseF'))
+                .style('font-size', '1.2em')
+                .text("Female Students");
+            falseLegend.append('text')
+                .attr("dy", "1em")
+                .style("text-anchor", "end")
+                .style('fill', colorScale('falseM'))
+                .style('font-size', '1.2em')
+                .text("Male Students");
+
+            // **** End Legend ****
+
 
             d.values.forEach(function (j, i) {
                 // Get the SVG container, and apply a transform such that the origin is the
@@ -230,29 +288,20 @@ $(function() {
                         .duration(750)
                         .attrTween("d", arcTween(gradRate * tau));
 
-                    var length = values.ethnicity.length;
-                    var textLength = length + (length / 2);
-                    var percentOfG = ((width - textLength) / (width));
-                    var dx = Math.ceil(textLength + Math.ceil((1 / (percentOfG * 100)) * width));
-
                     g.append("text")
                         .attr("id", "" + d.key + j.key + k.key + "ethnicText")
-                        .attr("dx", -dx)
                         .attr("dy", "-1em")
                         .attr("class", "arcLabel")
+                        .style("text-anchor", "middle")
                         .text(values.ethnicity);
 
                     g.append("text")
-                        .attr("dx", -dx)
-                        .attr("class", "arcLabel")
-                        .text(d.key.toLowerCase() == 'true' ? "FIG" : "No FIG");
-
-                    g.append("text")
                         .attr("id", "" + d.key + j.key + k.key + l + "gradRateText")
-                        .attr("dx", -dx)
-                        .attr("dy", 1 + l + "em")
+                        .attr("dy", .5 + l + "em")
                         .attr("class", "arcLabel")
-                        .text(Math.round(values.graduation_rate) + "%");
+                        .style("fill", colorScale("" + d.key + k.key))
+                        .style("text-anchor", "middle")
+                        .text("" + k.key + ": " + (Math.round(values.graduation_rate)) + "%");
                 });
             })
         });

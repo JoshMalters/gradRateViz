@@ -49,7 +49,7 @@ $(function() {
     svg.append("text")
         .attr("transform", "rotate(-90)")
         .attr("y", (margin.left / 5))
-        .attr("x",0 - (height / 2))
+        .attr("x", 0 - (height / 2))
         .attr("dy", "1em")
         .style("text-anchor", "middle")
         .text("Graduation Rate (%)");
@@ -218,13 +218,7 @@ $(function() {
     $(".nice-select").on("change", function() {
         // Grab Values from form
         var gender = $('#genderInput').val();
-        var upperCaseGender = gender.charAt(0).toUpperCase() + gender.slice(1);
         var ethnicity = $('#ethnicityInput').val();
-        var upperCaseEthnicity = ethnicity.charAt(0).toUpperCase() + ethnicity.slice(1);
-
-        // Set text in tag box
-        $('#genderVal').text(upperCaseGender);
-        $('#ethnicityVal').text(upperCaseEthnicity);
 
         // Reset chart
         gender = gender == 'all' ? '' : '_' + gender;
