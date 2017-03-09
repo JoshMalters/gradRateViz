@@ -215,7 +215,7 @@ $(function() {
     }
 
     // *************************** Applying Tags ***************************
-    $(".filterInput").on("change", function() {
+    $(".nice-select").on("change", function() {
         // Grab Values from form
         var gender = $('#genderInput').val();
         var upperCaseGender = gender.charAt(0).toUpperCase() + gender.slice(1);

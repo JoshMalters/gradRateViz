@@ -1,6 +1,7 @@
 
 body {
     padding:1em;
+    padding-top: 3em;
 }
 
 form {
@@ -12,7 +13,7 @@ form {
     background-color:lightblue;
     border-radius: 5px;
     padding: 1em;
-    padding-bottom: 0em;
+    padding-bottom: 4.3em;
 }
 
 /****** Start Classes ******/

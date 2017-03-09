@@ -57,14 +57,6 @@ $(function() {
         .style("text-anchor", "middle")
         .text("Number of Freshman");
 
-
-    // Function for line object
-    // define the area
-    var area = d3.area()
-        .x(function(d) { return xScale(d.tranYr); })
-        .y0(height)
-        .y1(function(d) { return yScale(d.numSum); });
-
     // Function for line object
     var line = d3.line()
         .x(function(d) { return xScale(d.tranYr); })
@@ -103,7 +95,8 @@ $(function() {
         });
 
         var path = g.selectAll(".line");
-        path.attr("stroke-dasharray", function(d) { return this.getTotalLength() + " " + this.getTotalLength(); })
+        path.attr("stroke-dasharray", function(d) { return this.getTotalLength() + " "
+            + this.getTotalLength(); })
             .attr("stroke-dashoffset", function(d) { return this.getTotalLength(); })
             .transition()
             .duration(2000)
@@ -156,7 +149,7 @@ $(function() {
         return nested;
     }
 
-    $(".filterInput").on("change", function() {
+    $(".nice-select").on("change", function() {
         var nested = filteredAndFormatted(allData);
 
         nested.forEach(function(d,i) {
