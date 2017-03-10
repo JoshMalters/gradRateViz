@@ -199,7 +199,7 @@ $(function() {
         toolTip
             .style('visibility', 'visible')
             .style("left", (mouseX + 60 + "px"))
-            .style("top", (mouseY + "px"))
+            .style("top", mouseY  + 100 + "px")
             .html(String(timeStamp).split(" ")[3] + "<br/>"
                 + "FIG: " + formatValue(figVal) + "%<br/>"
                 + "Non-FIG: " + formatValue(nonFigVal) + "%");
